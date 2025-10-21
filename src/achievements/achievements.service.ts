@@ -8,7 +8,6 @@ export class AchievementsService {
   constructor(private prisma: PrismaService) {}
 
   async create(createAchievementDto: CreateAchievementDto) {
-    // Проверяем существование секции, если указан sectionId
     if (createAchievementDto.sectionId) {
       const section = await this.prisma.section.findUnique({
         where: { id: createAchievementDto.sectionId },
