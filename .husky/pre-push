@@ -3,21 +3,17 @@
 
 echo "🚀 Running pre-push checks..."
 
-# Run all tests with coverage
-echo "🧪 Running full test suite..."
-npm run test:cov -- --passWithNoTests
-
 # Lint all files
 echo "🔍 Linting all files..."
 npm run lint:check
 
-# Build check
-echo "🏗️  Build check..."
-npm run build
+# Type check
+echo "🔧 Type checking..."
+npx tsc --noEmit
 
-# Docker build check (optional, можно закомментировать если долго)
-# echo "🐳 Docker build check..."
-# docker-compose build
+# Run tests
+echo "🧪 Running tests..."
+npm run test -- --passWithNoTests
 
 echo "✅ Pre-push checks passed!"
 
