@@ -16,6 +16,7 @@ import {
 import { GrainsService } from './grains.service';
 import { AddGrainsDto } from './dto/add-grains.dto';
 import { DeductGrainsDto } from './dto/deduct-grains.dto';
+import { TransferGrainsDto } from './dto/transfer-grains.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -61,6 +62,33 @@ export class GrainsController {
   @ApiResponse({ status: 200, description: 'История операций' })
   getHistory(@Param('userId') userId: string) {
     return this.grainsService.getHistory(userId);
+  }
+
+  @Post('transfer')
+  @ApiOperation({ summary: 'Перевести зерна другому пользователю' })
+  @ApiResponse({ status: 201, description: 'Зерна переведены' })
+  transferGrains(@Body() transferGrainsDto: TransferGrainsDto, @Request() req) {
+    return this.grainsService.transferGrains(
+      req.user.userId,
+      transferGrainsDto.toUserId,
+      transferGrainsDto.toUserEmail,
+      transferGrainsDto.amount,
+      transferGrainsDto.message,
+    );
+  }
+
+  @Get('transfers/my')
+  @ApiOperation({ summary: 'Получить историю переводов (отправленные и полученные)' })
+  @ApiResponse({ status: 200, description: 'История переводов' })
+  getMyTransfers(@Request() req) {
+    return this.grainsService.getTransferHistory(req.user.userId);
+  }
+
+  @Get('transfers/:userId')
+  @ApiOperation({ summary: 'Получить историю переводов пользователя' })
+  @ApiResponse({ status: 200, description: 'История переводов' })
+  getUserTransfers(@Param('userId') userId: string) {
+    return this.grainsService.getTransferHistory(userId);
   }
 }
 

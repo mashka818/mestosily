@@ -20,15 +20,17 @@ model User {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  enrollments        Enrollment[]
-  userGrains         UserGrain[]
-  userAchievements   UserAchievement[]
-  orders             Order[]
-  receipts           Receipt[]
-  eventRegistrations EventRegistration[]
-  createdNews        News[]
-  chatParticipants   ChatParticipant[]
-  chatMessages       ChatMessage[]
+  enrollments         Enrollment[]
+  userGrains          UserGrain[]
+  userAchievements    UserAchievement[]
+  orders              Order[]
+  receipts            Receipt[]
+  eventRegistrations  EventRegistration[]
+  createdNews         News[]
+  chatParticipants    ChatParticipant[]
+  chatMessages        ChatMessage[]
+  sentGrainTransfers  GrainTransfer[]   @relation("SentTransfers")
+  receivedGrainTransfers GrainTransfer[] @relation("ReceivedTransfers")
 
   @@map("users")
 }
@@ -165,6 +167,20 @@ model UserGrain {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_grains")
+}
+
+model GrainTransfer {
+  id         String   @id @default(cuid())
+  fromUserId String
+  toUserId   String
+  amount     Int
+  message    String?
+  createdAt  DateTime @default(now())
+
+  fromUser User @relation("SentTransfers", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser   User @relation("ReceivedTransfers", fields: [toUserId], references: [id], onDelete: Cascade)
+
+  @@map("grain_transfers")
 }
 
 model Order {

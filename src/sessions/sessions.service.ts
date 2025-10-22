@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { NewsType } from '@prisma/client';
 
 @Injectable()
 export class SessionsService {
   constructor(private prisma: PrismaService) {}
 
   async findAll() {
-    return this.prisma.session.findMany({
+    const sessions = await this.prisma.session.findMany({
       where: {
         startsAt: { gte: new Date() },
       },
@@ -17,6 +18,28 @@ export class SessionsService {
       },
       orderBy: { startsAt: 'asc' },
     });
+
+    const events = await this.prisma.news.findMany({
+      where: {
+        type: NewsType.EVENT,
+        isActive: true,
+        publishedAt: { gte: new Date() },
+      },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        imageUrl: true,
+        publishedAt: true,
+        _count: { select: { eventRegistrations: true } },
+      },
+      orderBy: { publishedAt: 'asc' },
+    });
+
+    return {
+      sessions,
+      events,
+    };
   }
 
   async findOne(id: string) {

@@ -8,7 +8,10 @@ export class SessionsController {
   constructor(private readonly sessionsService: SessionsService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Получить расписание занятий' })
+  @ApiOperation({ 
+    summary: 'Получить расписание занятий и ивентов',
+    description: 'Возвращает предстоящие занятия (sessions) и ивенты (events) из новостей'
+  })
   findAll() {
     return this.sessionsService.findAll();
   }
