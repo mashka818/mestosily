@@ -2,7 +2,6 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { NewsType } from '@prisma/client';
 import * as XLSX from 'xlsx';
-import { ScheduleRow } from './dto/import-schedule.dto';
 
 @Injectable()
 export class SessionsService {

@@ -16,4 +16,3 @@ export class DeductGrainsDto {
   @IsString()
   reason?: string;
 }
-

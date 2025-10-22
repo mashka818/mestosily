@@ -29,4 +29,3 @@ export class RegisterDto {
   @IsDateString()
   dateOfBirth?: string;
 }
-

@@ -14,4 +14,3 @@ export class CreateTeacherDto {
   @IsString()
   phone: string;
 }
-

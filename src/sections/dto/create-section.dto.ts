@@ -34,4 +34,3 @@ export class CreateSectionDto {
   @IsBoolean()
   isActive?: boolean;
 }
-

@@ -7,4 +7,3 @@ export class EnrollDto {
   @IsString()
   sessionId?: string;
 }
-

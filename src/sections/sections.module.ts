@@ -7,4 +7,3 @@ import { SectionsService } from './sections.service';
   providers: [SectionsService],
 })
 export class SectionsModule {}
-

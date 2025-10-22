@@ -74,4 +74,3 @@ export class TeachersService {
     return { message: 'Преподаватель удален' };
   }
 }
-

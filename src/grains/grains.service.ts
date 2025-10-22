@@ -6,7 +6,7 @@ import { GrainType } from '@prisma/client';
 export class GrainsService {
   constructor(private prisma: PrismaService) {}
 
-  async addGrains(userId: string, amount: number, reason: string, adminId: string) {
+  async addGrains(userId: string, amount: number, reason: string, _adminId: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException('Пользователь не найден');
@@ -36,7 +36,7 @@ export class GrainsService {
     });
   }
 
-  async deductGrains(userId: string, amount: number, reason: string, adminId: string) {
+  async deductGrains(userId: string, amount: number, reason: string, _adminId: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException('Пользователь не найден');
@@ -234,4 +234,3 @@ export class GrainsService {
     };
   }
 }
-

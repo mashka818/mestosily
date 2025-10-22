@@ -9,12 +9,7 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { SectionsService } from './sections.service';
 import { CreateSectionDto } from './dto/create-section.dto';
 import { UpdateSectionDto } from './dto/update-section.dto';
@@ -80,12 +75,7 @@ export class SectionsController {
   @ApiOperation({ summary: 'Записаться на секцию' })
   @ApiResponse({ status: 201, description: 'Запись создана' })
   @ApiResponse({ status: 404, description: 'Секция не найдена' })
-  enroll(
-    @Param('id') id: string,
-    @Request() req,
-    @Body() enrollDto: EnrollDto,
-  ) {
+  enroll(@Param('id') id: string, @Request() req, @Body() enrollDto: EnrollDto) {
     return this.sectionsService.enroll(id, req.user.userId, enrollDto.sessionId);
   }
 }
-

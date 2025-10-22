@@ -20,4 +20,3 @@ export class UploadService {
     return allowedMimes.includes(file.mimetype);
   }
 }
-

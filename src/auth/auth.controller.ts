@@ -36,4 +36,3 @@ export class AuthController {
     return this.authService.getCurrentUser(req.user.userId);
   }
 }
-

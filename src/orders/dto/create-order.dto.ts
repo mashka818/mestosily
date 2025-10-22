@@ -13,14 +13,13 @@ class OrderItemDto {
 }
 
 export class CreateOrderDto {
-  @ApiProperty({ 
+  @ApiProperty({
     type: [OrderItemDto],
     description: 'Позиции заказа',
-    example: [{ productId: 'prod1', quantity: 2 }]
+    example: [{ productId: 'prod1', quantity: 2 }],
   })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => OrderItemDto)
   items: OrderItemDto[];
 }
-

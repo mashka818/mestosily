@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, ConflictException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateAdminDto } from './dto/create-admin.dto';
@@ -92,9 +97,7 @@ export class UsersService {
       where: { id },
       data: {
         ...updateUserDto,
-        dateOfBirth: updateUserDto.dateOfBirth
-          ? new Date(updateUserDto.dateOfBirth)
-          : undefined,
+        dateOfBirth: updateUserDto.dateOfBirth ? new Date(updateUserDto.dateOfBirth) : undefined,
       },
       select: {
         id: true,
@@ -251,4 +254,3 @@ export class UsersService {
     });
   }
 }
-

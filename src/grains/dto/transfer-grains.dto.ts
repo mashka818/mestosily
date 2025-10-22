@@ -34,4 +34,3 @@ export class TransferGrainsDto {
   @IsString()
   message?: string;
 }
-

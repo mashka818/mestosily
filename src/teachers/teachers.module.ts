@@ -7,4 +7,3 @@ import { TeachersService } from './teachers.service';
   providers: [TeachersService],
 })
 export class TeachersModule {}
-

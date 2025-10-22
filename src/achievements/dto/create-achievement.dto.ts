@@ -16,7 +16,11 @@ export class CreateAchievementDto {
   @Min(0)
   rewardGrains: number;
 
-  @ApiProperty({ example: 'section-id', description: 'ID секции (опционально, для секционных достижений)', required: false })
+  @ApiProperty({
+    example: 'section-id',
+    description: 'ID секции (опционально, для секционных достижений)',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   sectionId?: string;

@@ -7,4 +7,3 @@ import { SessionsService } from './sessions.service';
   providers: [SessionsService],
 })
 export class SessionsModule {}
-

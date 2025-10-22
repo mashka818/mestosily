@@ -11,9 +11,12 @@ export class AddGrainsDto {
   @Min(1)
   amount: number;
 
-  @ApiProperty({ example: 'За участие в мероприятии', description: 'Причина начисления', required: false })
+  @ApiProperty({
+    example: 'За участие в мероприятии',
+    description: 'Причина начисления',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   reason?: string;
 }
-

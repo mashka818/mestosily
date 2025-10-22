@@ -10,13 +10,7 @@ import {
   Request,
   Query,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiQuery,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { AchievementsService } from './achievements.service';
 import { CreateAchievementDto } from './dto/create-achievement.dto';
 import { UpdateAchievementDto } from './dto/update-achievement.dto';
@@ -82,10 +76,7 @@ export class AchievementsController {
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Выдать достижение пользователю (ADMIN, ROOT)' })
   @ApiResponse({ status: 201, description: 'Достижение выдано, зерна начислены' })
-  grantAchievement(
-    @Body() body: { achievementId: string; userId: string },
-    @Request() req,
-  ) {
+  grantAchievement(@Body() body: { achievementId: string; userId: string }, @Request() req) {
     return this.achievementsService.grantAchievement(
       body.achievementId,
       body.userId,

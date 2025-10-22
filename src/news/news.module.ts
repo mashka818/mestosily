@@ -7,4 +7,3 @@ import { NewsService } from './news.service';
   providers: [NewsService],
 })
 export class NewsModule {}
-
