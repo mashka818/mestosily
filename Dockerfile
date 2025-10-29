@@ -79,8 +79,7 @@ RUN sed -i 's/\r$//' docker-entrypoint.sh 2>/dev/null || \
 # Проверяем что все файлы на месте и entrypoint существует
 RUN ls -la /app/ && \
     test -f /app/docker-entrypoint.sh && \
-    head -n 1 /app/docker-entrypoint.sh && \
-    file /app/docker-entrypoint.sh
+    head -n 1 /app/docker-entrypoint.sh
 
 EXPOSE 3000
 
