@@ -70,12 +70,19 @@ COPY prisma/seed.js ./prisma/
 # Создаем директорию для uploads
 RUN mkdir -p /app/uploads
 
-# Делаем entrypoint исполняемым
-RUN chmod +x docker-entrypoint.sh
+# Преобразуем CRLF в LF (для Windows файлов) и делаем entrypoint исполняемым
+RUN sed -i 's/\r$//' docker-entrypoint.sh 2>/dev/null || \
+    (tr -d '\r' < docker-entrypoint.sh > docker-entrypoint.sh.tmp && mv docker-entrypoint.sh.tmp docker-entrypoint.sh) && \
+    chmod +x docker-entrypoint.sh && \
+    chmod +x prisma/seed.js
 
-# Проверяем что все файлы на месте
-RUN ls -la /app/dist
+# Проверяем что все файлы на месте и entrypoint существует
+RUN ls -la /app/ && \
+    test -f /app/docker-entrypoint.sh && \
+    head -n 1 /app/docker-entrypoint.sh && \
+    file /app/docker-entrypoint.sh
 
 EXPOSE 3000
 
-ENTRYPOINT ["./docker-entrypoint.sh"]
+# Используем sh для надежного запуска (работает даже если файл не исполняемый)
+ENTRYPOINT ["sh", "./docker-entrypoint.sh"]

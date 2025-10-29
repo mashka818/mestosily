@@ -10,5 +10,13 @@ npx lint-staged
 echo "🔧 Type checking..."
 npx tsc --noEmit
 
+# Run tests
+echo "🧪 Running tests..."
+npm run test -- --passWithNoTests
+
+# Build check
+echo "🏗️  Build check..."
+npm run build
+
 echo "✅ Pre-commit checks passed!"
 
