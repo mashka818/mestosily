@@ -1,32 +1,32 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsBoolean, IsEnum, IsDateString } from 'class-validator';
-import { NewsType } from '@prisma/client';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsString, IsArray, IsOptional, IsDateString } from 'class-validator';
 
 export class CreateNewsDto {
-  @ApiProperty({ example: 'Ярмарка выходного дня', description: 'Заголовок' })
+  @ApiProperty({ description: 'Заголовок новости' })
   @IsString()
   title: string;
 
-  @ApiProperty({ example: 'Приглашаем всех на ярмарку...', description: 'Содержание' })
+  @ApiProperty({ description: 'Содержание новости' })
   @IsString()
   content: string;
 
-  @ApiProperty({ example: '/uploads/image.jpg', description: 'URL изображения', required: false })
+  @ApiPropertyOptional({
+    description: 'Массив URL изображений',
+    type: [String],
+  })
   @IsOptional()
-  @IsString()
-  imageUrl?: string;
+  @IsArray()
+  @IsString({ each: true })
+  images?: string[];
 
-  @ApiProperty({ enum: NewsType, example: 'NEWS', description: 'Тип (NEWS или EVENT)' })
-  @IsEnum(NewsType)
-  type: NewsType;
-
-  @ApiProperty({ example: true, description: 'Активна', required: false })
-  @IsOptional()
-  @IsBoolean()
-  isActive?: boolean;
-
-  @ApiProperty({ example: '2025-01-20T10:00:00Z', description: 'Дата публикации', required: false })
+  @ApiPropertyOptional({
+    description: 'Дата публикации (если не указана, новость будет неопубликованной)',
+  })
   @IsOptional()
   @IsDateString()
   publishedAt?: string;
+
+  @ApiProperty({ description: 'ID пользователя-создателя' })
+  @IsString()
+  createdBy: string;
 }

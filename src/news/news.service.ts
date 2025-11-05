@@ -2,60 +2,54 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateNewsDto } from './dto/create-news.dto';
 import { UpdateNewsDto } from './dto/update-news.dto';
-import { AddMediaDto } from './dto/add-media.dto';
 
 @Injectable()
 export class NewsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createNewsDto: CreateNewsDto, userId: string) {
+  async create(createNewsDto: CreateNewsDto) {
     return this.prisma.news.create({
-      data: {
-        ...createNewsDto,
-        publishedAt: createNewsDto.publishedAt ? new Date(createNewsDto.publishedAt) : new Date(),
-        createdBy: userId,
-      },
-      include: {
-        medias: true,
-        createdByUser: {
-          select: { id: true, firstName: true, lastName: true },
-        },
-      },
+      data: createNewsDto,
     });
   }
 
-  async findAll() {
-    return this.prisma.news.findMany({
-      where: { isActive: true },
-      include: {
-        medias: true,
-        createdByUser: {
-          select: { id: true, firstName: true, lastName: true },
+  async findAll(page: number = 1, limit: number = 10) {
+    const skip = (page - 1) * limit;
+
+    const [news, total] = await Promise.all([
+      this.prisma.news.findMany({
+        skip,
+        take: limit,
+        orderBy: {
+          publishedAt: 'desc',
         },
-        _count: { select: { eventRegistrations: true } },
+      }),
+      this.prisma.news.count(),
+    ]);
+
+    return {
+      data: news,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
       },
-      orderBy: { publishedAt: 'desc' },
+    };
+  }
+
+  async findRecent(limit: number = 5) {
+    return this.prisma.news.findMany({
+      take: limit,
+      orderBy: {
+        publishedAt: 'desc',
+      },
     });
   }
 
   async findOne(id: string) {
     const news = await this.prisma.news.findUnique({
       where: { id },
-      include: {
-        medias: {
-          orderBy: { sortOrder: 'asc' },
-        },
-        createdByUser: {
-          select: { id: true, firstName: true, lastName: true },
-        },
-        eventRegistrations: {
-          include: {
-            user: {
-              select: { id: true, firstName: true, lastName: true, email: true },
-            },
-          },
-        },
-      },
     });
 
     if (!news) {
@@ -66,92 +60,19 @@ export class NewsService {
   }
 
   async update(id: string, updateNewsDto: UpdateNewsDto) {
-    const news = await this.findOne(id);
+    await this.findOne(id);
 
     return this.prisma.news.update({
       where: { id },
-      data: {
-        ...updateNewsDto,
-        publishedAt: updateNewsDto.publishedAt ? new Date(updateNewsDto.publishedAt) : undefined,
-      },
-      include: {
-        medias: true,
-        createdByUser: {
-          select: { id: true, firstName: true, lastName: true },
-        },
-      },
+      data: updateNewsDto,
     });
   }
 
   async remove(id: string) {
-    const news = await this.findOne(id);
+    await this.findOne(id);
 
-    await this.prisma.news.delete({
+    return this.prisma.news.delete({
       where: { id },
-    });
-
-    return { message: 'Новость удалена' };
-  }
-
-  async addMedia(newsId: string, addMediaDto: AddMediaDto) {
-    const news = await this.findOne(newsId);
-
-    return this.prisma.newsMedia.create({
-      data: {
-        newsId,
-        ...addMediaDto,
-      },
-    });
-  }
-
-  async removeMedia(mediaId: string) {
-    const media = await this.prisma.newsMedia.findUnique({
-      where: { id: mediaId },
-    });
-
-    if (!media) {
-      throw new NotFoundException('Медиафайл не найден');
-    }
-
-    await this.prisma.newsMedia.delete({
-      where: { id: mediaId },
-    });
-
-    return { message: 'Медиафайл удален' };
-  }
-
-  async registerForEvent(newsId: string, userId: string) {
-    const news = await this.findOne(newsId);
-
-    if (news.type !== 'EVENT') {
-      throw new Error('Можно записываться только на события');
-    }
-
-    const existing = await this.prisma.eventRegistration.findUnique({
-      where: {
-        userId_newsId: {
-          userId,
-          newsId,
-        },
-      },
-    });
-
-    if (existing) {
-      throw new Error('Вы уже записаны на это событие');
-    }
-
-    return this.prisma.eventRegistration.create({
-      data: {
-        userId,
-        newsId,
-        status: 'PENDING',
-      },
-      include: {
-        news: true,
-        user: {
-          select: { id: true, firstName: true, lastName: true },
-        },
-      },
     });
   }
 }

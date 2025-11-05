@@ -68,7 +68,7 @@ export class UsersService {
       where: { userId: id },
       include: {
         section: true,
-        session: {
+        lesson: {
           include: {
             teacher: true,
           },
@@ -140,16 +140,12 @@ export class UsersService {
     const todayEnd = new Date();
     todayEnd.setHours(23, 59, 59, 999);
 
-    const todaySessions = await this.prisma.session.findMany({
+    const todayLessons = await this.prisma.lesson.findMany({
       where: {
         enrollments: {
           some: {
             userId: id,
           },
-        },
-        startsAt: {
-          gte: todayStart,
-          lte: todayEnd,
         },
       },
       include: {
@@ -163,7 +159,7 @@ export class UsersService {
 
     return {
       ...user,
-      todaySessions,
+      todayLessons,
     };
   }
 

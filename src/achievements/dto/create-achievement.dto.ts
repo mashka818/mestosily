@@ -6,10 +6,23 @@ export class CreateAchievementDto {
   @IsString()
   name: string;
 
-  @ApiProperty({ example: 'Посетил первое занятие', description: 'Описание', required: false })
+  @ApiProperty({
+    example: 'Посетил первое занятие',
+    description: 'Описание',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   description?: string;
+
+  @ApiProperty({
+    example: 'https://example.com/icon.png',
+    description: 'URL иконки достижения',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  iconUrl?: string;
 
   @ApiProperty({ example: 50, description: 'Награда в зернах' })
   @IsInt()

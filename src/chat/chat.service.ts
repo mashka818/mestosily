@@ -14,7 +14,7 @@ export class ChatService {
       },
       include: {
         section: true,
-        news: true,
+        event: true,
         _count: { select: { messages: true } },
       },
     });

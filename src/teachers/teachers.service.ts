@@ -19,7 +19,7 @@ export class TeachersService {
         sections: true,
         _count: {
           select: {
-            sessions: true,
+            lessons: true,
           },
         },
       },
@@ -31,7 +31,7 @@ export class TeachersService {
       where: { id },
       include: {
         sections: true,
-        sessions: {
+        lessons: {
           include: {
             section: true,
           },

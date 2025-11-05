@@ -18,12 +18,7 @@ export class SectionsService {
       where: { isActive: true },
       include: {
         teachers: true,
-        sessions: {
-          where: {
-            startsAt: {
-              gte: new Date(),
-            },
-          },
+        lessons: {
           orderBy: {
             startsAt: 'asc',
           },
@@ -46,12 +41,7 @@ export class SectionsService {
       where: { id },
       include: {
         teachers: true,
-        sessions: {
-          where: {
-            startsAt: {
-              gte: new Date(),
-            },
-          },
+        lessons: {
           orderBy: {
             startsAt: 'asc',
           },
@@ -125,12 +115,12 @@ export class SectionsService {
     return { message: 'Секция удалена' };
   }
 
-  async enroll(sectionId: string, userId: string, sessionId?: string) {
+  async enroll(sectionId: string, userId: string, lessonId?: string) {
     const section = await this.prisma.section.findUnique({
       where: { id: sectionId },
       include: {
-        sessions: {
-          where: sessionId ? { id: sessionId } : undefined,
+        lessons: {
+          where: lessonId ? { id: lessonId } : undefined,
         },
       },
     });
@@ -139,17 +129,17 @@ export class SectionsService {
       throw new NotFoundException('Секция не найдена');
     }
 
-    if (sessionId) {
-      const session = section.sessions.find((s) => s.id === sessionId);
-      if (!session) {
+    if (lessonId) {
+      const lesson = section.lessons.find((s) => s.id === lessonId);
+      if (!lesson) {
         throw new NotFoundException('Занятие не найдено');
       }
 
       const enrollmentsCount = await this.prisma.enrollment.count({
-        where: { sessionId },
+        where: { lessonId },
       });
 
-      if (session.capacity && enrollmentsCount >= session.capacity) {
+      if (lesson.capacity && enrollmentsCount >= lesson.capacity) {
         throw new Error('Мест на занятие не осталось');
       }
     }
@@ -158,7 +148,7 @@ export class SectionsService {
       where: {
         userId,
         sectionId,
-        sessionId: sessionId || null,
+        lessonId: lessonId || null,
       },
     });
 
@@ -170,12 +160,12 @@ export class SectionsService {
       data: {
         userId,
         sectionId,
-        sessionId,
+        lessonId,
         status: 'PENDING',
       },
       include: {
         section: true,
-        session: {
+        lesson: {
           include: {
             teacher: true,
           },

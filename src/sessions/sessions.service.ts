@@ -1,6 +1,5 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { NewsType } from '@prisma/client';
 import * as XLSX from 'xlsx';
 
 @Injectable()
@@ -18,13 +17,7 @@ export class SessionsService {
     // Первый день следующего месяца
     const endOfMonth = new Date(targetYear, targetMonth, 1);
 
-    const sessions = await this.prisma.session.findMany({
-      where: {
-        startsAt: {
-          gte: startOfMonth,
-          lt: endOfMonth,
-        },
-      },
+    const sessions = await this.prisma.lesson.findMany({
       include: {
         section: true,
         teacher: true,
@@ -33,9 +26,8 @@ export class SessionsService {
       orderBy: { startsAt: 'asc' },
     });
 
-    const events = await this.prisma.news.findMany({
+    const events = await this.prisma.event.findMany({
       where: {
-        type: NewsType.EVENT,
         isActive: true,
         publishedAt: {
           gte: startOfMonth,
@@ -44,11 +36,12 @@ export class SessionsService {
       },
       select: {
         id: true,
+        name: true,
         title: true,
-        content: true,
+        description: true,
+        date: true,
         imageUrl: true,
-        publishedAt: true,
-        createdAt: true,
+        bannerUrl: true,
         _count: { select: { eventRegistrations: true } },
       },
       orderBy: { publishedAt: 'asc' },
@@ -63,7 +56,7 @@ export class SessionsService {
   }
 
   async findOne(id: string) {
-    return this.prisma.session.findUnique({
+    return this.prisma.lesson.findUnique({
       where: { id },
       include: {
         section: true,
@@ -183,26 +176,9 @@ export class SessionsService {
             continue;
           }
 
-          // Создаем DateTime
-          const [year, month, day] = date.toString().split('-');
-          const [startHour, startMin] = startTime.toString().split(':');
-          const [endHour, endMin] = endTime.toString().split(':');
-
-          const startsAt = new Date(
-            parseInt(year),
-            parseInt(month) - 1,
-            parseInt(day),
-            parseInt(startHour),
-            parseInt(startMin),
-          );
-
-          const endsAt = new Date(
-            parseInt(year),
-            parseInt(month) - 1,
-            parseInt(day),
-            parseInt(endHour),
-            parseInt(endMin),
-          );
+          // Форматируем время в строки HH:MM
+          const startsAt = startTime.toString();
+          const endsAt = endTime.toString();
 
           // Проверяем существование секции и преподавателя
           const section = await this.prisma.section.findUnique({
@@ -224,14 +200,15 @@ export class SessionsService {
           }
 
           // Создаем занятие
-          const session = await this.prisma.session.create({
+          const session = await this.prisma.lesson.create({
             data: {
               sectionId,
               teacherId,
+              dayOfWeek: new Date(date.toString()).getDay() || 7,
               startsAt,
               endsAt,
               location,
-              capacity,
+              capacity: parseInt(capacity.toString()),
             },
             include: {
               section: true,
