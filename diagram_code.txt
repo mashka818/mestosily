@@ -196,13 +196,11 @@ erDiagram
     User ||--o{ UserGrain : "имеет зерна"
     User ||--o{ UserAchievement : "имеет достижения"
     User ||--o{ Order : "делает заказы"
-    
     User ||--o{ EventRegistration : "записывается на ивенты"
     User ||--o{ News : "создает новости (ROOT)"
     Product ||--o{ OrderItem : "входит в заказы"
     Achievement ||--o{ UserAchievement : "получается пользователями"
     Section ||--o{ Achievement : "достижения секции"
-    
     Section ||--o{ Session : "проводит занятия"
     Teacher ||--o{ Session : "ведет занятия"
     Section }o--o{ Teacher : "преподаватели"

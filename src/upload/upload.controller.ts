@@ -81,4 +81,36 @@ export class UploadController {
       mimeType: file.mimetype,
     };
   }
+
+  @Post('audio')
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({ summary: 'Загрузить аудио' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  uploadAudio(@UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('Файл не загружен');
+    }
+
+    if (!this.uploadService.validateAudio(file)) {
+      throw new BadRequestException('Допустимые форматы: MP3, WAV, OGG, WEBM');
+    }
+
+    return {
+      filename: file.filename,
+      url: this.uploadService.getFileUrl(file.filename),
+      size: file.size,
+      mimeType: file.mimetype,
+    };
+  }
 }

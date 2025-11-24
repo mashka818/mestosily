@@ -19,4 +19,9 @@ export class UploadService {
     const allowedMimes = ['video/mp4', 'video/webm', 'video/avi'];
     return allowedMimes.includes(file.mimetype);
   }
+
+  validateAudio(file: Express.Multer.File): boolean {
+    const allowedMimes = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/webm'];
+    return allowedMimes.includes(file.mimetype);
+  }
 }
