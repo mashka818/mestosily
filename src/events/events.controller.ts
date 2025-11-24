@@ -19,6 +19,7 @@ import { UpdateEventDto } from './dto/update-event.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UserRole } from '@prisma/client';
 import { UploadService } from '../upload/upload.service';
 
@@ -135,5 +136,29 @@ export class EventsController {
 
     const bannerUrl = this.uploadService.getFileUrl(file.filename);
     return this.eventsService.update(id, { bannerUrl });
+  }
+
+  @Post(':id/register')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Зарегистрироваться на мероприятие' })
+  registerForEvent(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.eventsService.registerForEvent(user.id, id);
+  }
+
+  @Delete(':id/register')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Отменить регистрацию на мероприятие' })
+  cancelRegistration(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.eventsService.cancelRegistration(user.id, id);
+  }
+
+  @Get('my/registrations')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Получить мои регистрации на мероприятия' })
+  getMyRegistrations(@CurrentUser() user: any) {
+    return this.eventsService.getMyRegistrations(user.id);
   }
 }

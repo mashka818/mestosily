@@ -55,6 +55,53 @@ export class SessionsService {
     };
   }
 
+  async findByDate(date: Date) {
+    // Начало дня
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    // Конец дня
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const dayOfWeek = date.getDay() || 7; // 0 (воскресенье) => 7
+
+    // Получаем уроки для этого дня недели
+    const lessons = await this.prisma.lesson.findMany({
+      where: {
+        dayOfWeek,
+      },
+      include: {
+        section: true,
+        teacher: true,
+        _count: { select: { enrollments: true } },
+      },
+      orderBy: { startsAt: 'asc' },
+    });
+
+    // Получаем события на эту дату
+    const events = await this.prisma.event.findMany({
+      where: {
+        isActive: true,
+        date: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+      },
+      include: {
+        _count: { select: { eventRegistrations: true } },
+      },
+      orderBy: { startTime: 'asc' },
+    });
+
+    return {
+      date: date.toISOString().split('T')[0],
+      dayOfWeek,
+      lessons,
+      events,
+    };
+  }
+
   async findOne(id: string) {
     return this.prisma.lesson.findUnique({
       where: { id },

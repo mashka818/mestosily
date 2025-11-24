@@ -34,7 +34,22 @@ export class SessionsController {
   @ApiOperation({ summary: 'Получить расписание занятий' })
   @ApiQuery({ name: 'year', required: false, description: 'Год' })
   @ApiQuery({ name: 'month', required: false, description: 'Месяц (1-12)' })
-  findAll(@Query('year') year?: string, @Query('month') month?: string) {
+  @ApiQuery({ name: 'date', required: false, description: 'Конкретная дата (YYYY-MM-DD)' })
+  findAll(
+    @Query('year') year?: string,
+    @Query('month') month?: string,
+    @Query('date') date?: string,
+  ) {
+    // Если указана конкретная дата - возвращаем расписание на эту дату
+    if (date) {
+      const parsedDate = new Date(date);
+      if (isNaN(parsedDate.getTime())) {
+        throw new Error('Неверный формат даты. Используйте YYYY-MM-DD');
+      }
+      return this.sessionsService.findByDate(parsedDate);
+    }
+
+    // Иначе возвращаем расписание на месяц
     return this.sessionsService.findAll(
       year ? parseInt(year) : undefined,
       month ? parseInt(month) : undefined,

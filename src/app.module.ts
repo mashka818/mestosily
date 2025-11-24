@@ -20,6 +20,7 @@ import { UploadModule } from './upload/upload.module';
 import { TeachersModule } from './teachers/teachers.module';
 import { PartnersModule } from './partners/partners.module';
 import { FreeVisitsModule } from './free-visits/free-visits.module';
+import { EnrollmentsModule } from './enrollments/enrollments.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { FreeVisitsModule } from './free-visits/free-visits.module';
     TeachersModule,
     PartnersModule,
     FreeVisitsModule,
+    EnrollmentsModule,
   ],
 })
 export class AppModule {}
