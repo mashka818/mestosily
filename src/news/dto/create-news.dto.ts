@@ -20,6 +20,13 @@ export class CreateNewsDto {
   images?: string[];
 
   @ApiPropertyOptional({
+    description: 'Ссылка (например, на Telegram)',
+  })
+  @IsOptional()
+  @IsString()
+  link?: string;
+
+  @ApiPropertyOptional({
     description: 'Дата публикации (если не указана, новость будет неопубликованной)',
   })
   @IsOptional()

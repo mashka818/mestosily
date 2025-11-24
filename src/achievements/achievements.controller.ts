@@ -9,8 +9,20 @@ import {
   UseGuards,
   Request,
   Query,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiQuery,
+  ApiConsumes,
+  ApiBody,
+} from '@nestjs/swagger';
 import { AchievementsService } from './achievements.service';
 import { CreateAchievementDto } from './dto/create-achievement.dto';
 import { UpdateAchievementDto } from './dto/update-achievement.dto';
@@ -18,11 +30,15 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
+import { UploadService } from '../upload/upload.service';
 
 @ApiTags('Achievements')
 @Controller('achievements')
 export class AchievementsController {
-  constructor(private readonly achievementsService: AchievementsService) {}
+  constructor(
+    private readonly achievementsService: AchievementsService,
+    private readonly uploadService: UploadService,
+  ) {}
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -82,5 +98,54 @@ export class AchievementsController {
       body.userId,
       req.user.userId,
     );
+  }
+
+  @Patch(':id/icon')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ROOT, UserRole.ADMIN)
+  @ApiBearerAuth('JWT-auth')
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({ summary: 'Загрузить иконку для достижения (только администраторы)' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  async uploadIcon(@Param('id') id: string, @UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('Файл не загружен');
+    }
+
+    if (!this.uploadService.validateImage(file)) {
+      throw new BadRequestException('Допустимые форматы: JPEG, PNG, GIF, WEBP');
+    }
+
+    const iconUrl = this.uploadService.getFileUrl(file.filename);
+    return this.achievementsService.update(id, { iconUrl });
+  }
+
+  @Post('redeem/code')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Получить достижение по коду' })
+  @ApiResponse({ status: 201, description: 'Достижение получено' })
+  redeemByCode(@Request() req, @Body() body: { code: string }) {
+    return this.achievementsService.redeemByCode(req.user.id, body.code);
+  }
+
+  @Post('redeem/qr')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Получить достижение по QR-коду' })
+  @ApiResponse({ status: 201, description: 'Достижение получено' })
+  redeemByQr(@Request() req, @Body() body: { qrCode: string }) {
+    return this.achievementsService.redeemByQr(req.user.id, body.qrCode);
   }
 }

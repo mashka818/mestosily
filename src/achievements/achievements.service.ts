@@ -131,4 +131,62 @@ export class AchievementsService {
 
     return userAchievement;
   }
+
+  async redeemByCode(userId: string, code: string) {
+    const achievement = await this.prisma.achievement.findUnique({
+      where: { code },
+    });
+
+    if (!achievement) {
+      throw new NotFoundException('Достижение с таким кодом не найдено');
+    }
+
+    if (!achievement.isActive) {
+      throw new BadRequestException('Достижение неактивно');
+    }
+
+    const existing = await this.prisma.userAchievement.findUnique({
+      where: {
+        userId_achievementId: {
+          userId,
+          achievementId: achievement.id,
+        },
+      },
+    });
+
+    if (existing) {
+      throw new BadRequestException('Вы уже получили это достижение');
+    }
+
+    return this.grantAchievement(achievement.id, userId, 'system');
+  }
+
+  async redeemByQr(userId: string, qrCode: string) {
+    const achievement = await this.prisma.achievement.findUnique({
+      where: { qrCode },
+    });
+
+    if (!achievement) {
+      throw new NotFoundException('Достижение с таким QR-кодом не найдено');
+    }
+
+    if (!achievement.isActive) {
+      throw new BadRequestException('Достижение неактивно');
+    }
+
+    const existing = await this.prisma.userAchievement.findUnique({
+      where: {
+        userId_achievementId: {
+          userId,
+          achievementId: achievement.id,
+        },
+      },
+    });
+
+    if (existing) {
+      throw new BadRequestException('Вы уже получили это достижение');
+    }
+
+    return this.grantAchievement(achievement.id, userId, 'system');
+  }
 }

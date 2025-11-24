@@ -59,4 +59,13 @@ export class CreateSectionDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  @ApiProperty({
+    example: 'https://drive.google.com/drive/folders/...',
+    description: 'Ссылка на Google Drive с галереей фотографий',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  galleryDriveUrl?: string;
 }

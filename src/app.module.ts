@@ -19,6 +19,7 @@ import { ChatModule } from './chat/chat.module';
 import { UploadModule } from './upload/upload.module';
 import { TeachersModule } from './teachers/teachers.module';
 import { PartnersModule } from './partners/partners.module';
+import { FreeVisitsModule } from './free-visits/free-visits.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { PartnersModule } from './partners/partners.module';
     UploadModule,
     TeachersModule,
     PartnersModule,
+    FreeVisitsModule,
   ],
 })
 export class AppModule {}

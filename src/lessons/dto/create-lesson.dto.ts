@@ -35,4 +35,9 @@ export class CreateLessonDto {
   @IsInt()
   @Min(1)
   capacity?: number;
+
+  @ApiProperty({ example: 'Описание занятия', description: 'Описание занятия', required: false })
+  @IsOptional()
+  @IsString()
+  description?: string;
 }

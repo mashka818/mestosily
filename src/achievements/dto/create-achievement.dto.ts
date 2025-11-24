@@ -42,4 +42,22 @@ export class CreateAchievementDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  @ApiProperty({
+    example: 'ACHIEVEMENT123',
+    description: 'Код для получения достижения',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  code?: string;
+
+  @ApiProperty({
+    example: 'qr-code-string',
+    description: 'QR-код для получения достижения',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  qrCode?: string;
 }

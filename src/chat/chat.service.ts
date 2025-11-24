@@ -132,12 +132,78 @@ export class ChatService {
     return { messageId, chatId: message.chatId };
   }
 
+  async findOne(id: string) {
+    const chat = await this.prisma.chat.findUnique({
+      where: { id },
+      include: {
+        section: true,
+        event: true,
+        participants: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+        _count: { select: { messages: true } },
+      },
+    });
+
+    if (!chat) {
+      throw new NotFoundException('Чат не найден');
+    }
+
+    return chat;
+  }
+
   async createChat(type: 'SUPPORT' | 'SECTION' | 'EVENT', sectionId?: string, eventId?: string) {
     return this.prisma.chat.create({
       data: {
         type,
         sectionId,
         eventId,
+      },
+      include: {
+        section: true,
+        event: true,
+        participants: true,
+      },
+    });
+  }
+
+  async updateChat(
+    id: string,
+    data: { type?: 'SUPPORT' | 'SECTION' | 'EVENT'; sectionId?: string; eventId?: string },
+  ) {
+    const chat = await this.prisma.chat.findUnique({
+      where: { id },
+    });
+
+    if (!chat) {
+      throw new NotFoundException('Чат не найден');
+    }
+
+    return this.prisma.chat.update({
+      where: { id },
+      data,
+      include: {
+        section: true,
+        event: true,
+        participants: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
       },
     });
   }

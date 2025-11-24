@@ -62,6 +62,9 @@ export class SectionsService {
           },
         },
         achievements: true,
+        images: {
+          orderBy: { position: 'asc' },
+        },
         enrollments: {
           include: {
             user: {
@@ -172,5 +175,61 @@ export class SectionsService {
         },
       },
     });
+  }
+
+  async addSectionImage(sectionId: string, imageUrl: string, position: number) {
+    const section = await this.prisma.section.findUnique({
+      where: { id: sectionId },
+    });
+
+    if (!section) {
+      throw new NotFoundException('Секция не найдена');
+    }
+
+    return this.prisma.sectionImage.create({
+      data: {
+        sectionId,
+        imageUrl,
+        position,
+      },
+    });
+  }
+
+  async getSectionImages(sectionId: string) {
+    return this.prisma.sectionImage.findMany({
+      where: { sectionId },
+      orderBy: { position: 'asc' },
+    });
+  }
+
+  async updateSectionImagePosition(imageId: string, position: number) {
+    const image = await this.prisma.sectionImage.findUnique({
+      where: { id: imageId },
+    });
+
+    if (!image) {
+      throw new NotFoundException('Изображение не найдено');
+    }
+
+    return this.prisma.sectionImage.update({
+      where: { id: imageId },
+      data: { position },
+    });
+  }
+
+  async deleteSectionImage(imageId: string) {
+    const image = await this.prisma.sectionImage.findUnique({
+      where: { id: imageId },
+    });
+
+    if (!image) {
+      throw new NotFoundException('Изображение не найдено');
+    }
+
+    await this.prisma.sectionImage.delete({
+      where: { id: imageId },
+    });
+
+    return { message: 'Изображение удалено' };
   }
 }
