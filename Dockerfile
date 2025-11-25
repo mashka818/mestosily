@@ -4,14 +4,14 @@ WORKDIR /app
 
 # Установка системных зависимостей для сборки
 RUN apt-get update -y && \
-    apt-get install -y openssl libssl3 ca-certificates python3 make g++ && \
+    apt-get install -y --no-install-recommends openssl libssl3 ca-certificates python3 make g++ && \
     rm -rf /var/lib/apt/lists/*
 
 # Копируем package files
 COPY package*.json ./
 
 # Устанавливаем все зависимости (включая dev)
-RUN npm ci
+RUN npm ci --prefer-offline
 
 # Копируем Prisma schema
 COPY prisma ./prisma/
@@ -29,8 +29,11 @@ COPY src ./src/
 # Собираем приложение
 RUN npm run build
 
-# Проверяем что dist создался
-RUN ls -la /app/dist
+# Проверяем что dist создался и имеет правильную структуру
+RUN ls -la /app/dist && \
+    echo "Checking main.js location:" && \
+    (test -f /app/dist/main.js && echo "✅ Found /app/dist/main.js" || echo "❌ /app/dist/main.js not found") && \
+    (test -f /app/dist/src/main.js && echo "✅ Found /app/dist/src/main.js" || echo "❌ /app/dist/src/main.js not found")
 
 FROM node:20-slim AS production
 
@@ -38,7 +41,7 @@ WORKDIR /app
 
 # Установка runtime зависимостей
 RUN apt-get update -y && \
-    apt-get install -y openssl libssl3 ca-certificates && \
+    apt-get install -y --no-install-recommends openssl libssl3 ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production
@@ -48,11 +51,11 @@ COPY package*.json ./
 
 # Устанавливаем только production зависимости + build deps временно
 RUN apt-get update -y && \
-    apt-get install -y python3 make g++ && \
-    npm ci --only=production && \
+    apt-get install -y --no-install-recommends python3 make g++ && \
+    npm ci --only=production --prefer-offline && \
     apt-get purge -y python3 make g++ && \
     apt-get autoremove -y && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* /root/.npm
 
 # Копируем Prisma schema
 COPY prisma ./prisma/
@@ -63,8 +66,14 @@ RUN npx prisma generate
 # Копируем собранное приложение из builder
 COPY --from=builder /app/dist ./dist
 
+# Проверяем что dist правильно скопировался
+RUN echo "Checking copied dist:" && \
+    ls -la /app/dist && \
+    (test -f /app/dist/main.js && echo "✅ /app/dist/main.js exists in production stage" || echo "❌ /app/dist/main.js missing in production stage")
+
 # Копируем дополнительные файлы
 COPY docker-entrypoint.sh ./
+COPY wait-for-db.js ./
 COPY prisma/seed.js ./prisma/
 
 # Создаем директорию для uploads
