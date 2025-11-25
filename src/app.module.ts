@@ -26,6 +26,9 @@ import { EnrollmentsModule } from './enrollments/enrollments.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: '.env',
+      ignoreEnvFile: false,
+      expandVariables: true,
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
