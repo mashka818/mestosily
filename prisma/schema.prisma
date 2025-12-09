@@ -1,0 +1,442 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String    @id @default(cuid())
+  email       String    @unique
+  password    String
+  firstName   String
+  lastName    String
+  phone       String?
+  dateOfBirth DateTime?
+  role        UserRole  @default(USER)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  enrollments            Enrollment[]
+  userGrains             UserGrain[]
+  userAchievements       UserAchievement[]
+  orders                 Order[]
+  receipts               Receipt[]
+  eventRegistrations     EventRegistration[]
+  createdNews            News[]              @relation("NewsCreatedBy")
+  createdEvents          Event[]             @relation("EventCreatedBy")
+  chatParticipants       ChatParticipant[]
+  chatMessages           ChatMessage[]
+  sentGrainTransfers     GrainTransfer[]     @relation("SentTransfers")
+  receivedGrainTransfers GrainTransfer[]     @relation("ReceivedTransfers")
+  freeVisits             FreeVisit[]
+
+  @@map("users")
+}
+
+model Section {
+  id              String        @id @default(cuid())
+  name            String
+  description     String?
+  imageUrl        String?
+  iconUrl         String?
+  galleryDriveUrl String?
+  ageMin          Int           @default(12)
+  ageMax          Int           @default(17)
+  maxParticipants Int?
+  isActive        Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  enrollments  Enrollment[]
+  teachers     Teacher[]
+  lessons      Lesson[]
+  achievements Achievement[]
+  chats        Chat[]
+  images       SectionImage[]
+
+  @@map("sections")
+}
+
+model Enrollment {
+  id            String           @id @default(cuid())
+  userId        String
+  sectionId     String
+  lessonId      String?
+  status        EnrollmentStatus @default(PENDING)
+  paymentStatus PaymentStatus    @default(PENDING)
+  enrolledAt    DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  section Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  lesson  Lesson? @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, sectionId, lessonId])
+  @@map("enrollments")
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Int
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orderItems OrderItem[]
+
+  @@map("products")
+}
+
+model News {
+  id          String    @id @default(cuid())
+  title       String
+  content     String
+  images      String[]
+  link        String?
+  publishedAt DateTime?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String
+
+  createdByUser User @relation("NewsCreatedBy", fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@map("news")
+}
+
+model Event {
+  id              String    @id @default(cuid())
+  name            String
+  title           String
+  description     String
+  date            DateTime
+  startTime       String
+  endTime         String
+  price           Int       @default(0)
+  maxParticipants Int?
+  textColor       String?
+  imageUrl        String?
+  bannerUrl       String?
+  isActive        Boolean   @default(true)
+  publishedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdBy       String
+
+  eventRegistrations EventRegistration[]
+  chats              Chat[]
+  createdByUser      User                @relation("EventCreatedBy", fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@map("events")
+}
+
+model EventRegistration {
+  id           String             @id @default(cuid())
+  userId       String
+  eventId      String
+  status       RegistrationStatus @default(PENDING)
+  registeredAt DateTime?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId])
+  @@map("event_registrations")
+}
+
+model Achievement {
+  id           String   @id @default(cuid())
+  name         String
+  description  String?
+  iconUrl      String?
+  rewardGrains Int      @default(0)
+  code         String?  @unique
+  qrCode       String?  @unique
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  sectionId    String?
+
+  userAchievements UserAchievement[]
+  section          Section?          @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+
+  @@map("achievements")
+}
+
+model UserAchievement {
+  id            String   @id @default(cuid())
+  userId        String
+  achievementId String
+  earnedAt      DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@map("user_achievements")
+}
+
+model UserGrain {
+  id        String    @id @default(cuid())
+  userId    String
+  amount    Int
+  reason    String?
+  type      GrainType @default(EARNED)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_grains")
+}
+
+model GrainTransfer {
+  id         String   @id @default(cuid())
+  fromUserId String
+  toUserId   String
+  amount     Int
+  message    String?
+  createdAt  DateTime @default(now())
+
+  fromUser User @relation("SentTransfers", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser   User @relation("ReceivedTransfers", fields: [toUserId], references: [id], onDelete: Cascade)
+
+  @@map("grain_transfers")
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  userId      String
+  totalAmount Int
+  status      OrderStatus @default(PENDING)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+  receipts   Receipt[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+  price     Int
+  createdAt DateTime @default(now())
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("order_items")
+}
+
+model Teacher {
+  id         String   @id @default(cuid())
+  firstName  String
+  lastName   String
+  middleName String?
+  phone      String
+  role       String?
+  photoUrl   String?
+  audioUrl   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  sections Section[]
+  lessons  Lesson[]
+
+  @@map("teachers")
+}
+
+model Lesson {
+  id          String   @id @default(cuid())
+  sectionId   String
+  teacherId   String?
+  date        DateTime
+  startsAt    String
+  endsAt      String
+  location    String?
+  capacity    Int?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  section     Section      @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  teacher     Teacher?     @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+  enrollments Enrollment[]
+
+  @@index([sectionId])
+  @@index([teacherId])
+  @@index([date])
+  @@index([sectionId, date])
+  @@map("lessons")
+}
+
+model Partner {
+  id        String   @id @default(cuid())
+  name      String
+  imageUrl  String?
+  link      String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("partners")
+}
+
+model Receipt {
+  id         String        @id @default(cuid())
+  orderId    String        @unique
+  status     ReceiptStatus @default(PENDING)
+  redeemedAt DateTime?
+  redeemedBy String?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  order         Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  administrator User? @relation(fields: [redeemedBy], references: [id])
+
+  @@map("receipts")
+}
+
+model Chat {
+  id        String   @id @default(cuid())
+  type      ChatType
+  sectionId String?
+  eventId   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  section      Section?          @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+  event        Event?            @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  participants ChatParticipant[]
+  messages     ChatMessage[]
+
+  @@index([sectionId])
+  @@index([eventId])
+  @@map("chats")
+}
+
+model ChatParticipant {
+  id       String   @id @default(cuid())
+  chatId   String
+  userId   String
+  joinedAt DateTime @default(now())
+  isMuted  Boolean  @default(false)
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([chatId, userId])
+  @@map("chat_participants")
+}
+
+model ChatMessage {
+  id        String    @id @default(cuid())
+  chatId    String
+  authorId  String
+  content   String
+  createdAt DateTime  @default(now())
+  editedAt  DateTime?
+
+  chat   Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([chatId])
+  @@index([authorId])
+  @@map("chat_messages")
+}
+
+model SectionImage {
+  id        String   @id @default(cuid())
+  sectionId String
+  imageUrl  String
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  section Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@index([sectionId])
+  @@map("section_images")
+}
+
+model FreeVisit {
+  id        String   @id @default(cuid())
+  userId    String
+  amount    Int      @default(1)
+  used      Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("free_visits")
+}
+
+enum EnrollmentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  REFUNDED
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  ROOT
+}
+
+enum RegistrationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum GrainType {
+  EARNED
+  SPENT
+  BONUS
+  ACHIEVEMENT
+  REFUND
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+enum ReceiptStatus {
+  PENDING
+  REDEEMED
+  EXPIRED
+}
+
+enum ChatType {
+  SUPPORT
+  SECTION
+  EVENT
+}

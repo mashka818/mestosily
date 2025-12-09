@@ -1,0 +1,217 @@
+erDiagram
+    User {
+        string id PK
+        string email UK
+        string password
+        string firstName
+        string lastName
+        string phone
+        datetime dateOfBirth
+        string role
+        boolean isActive
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Section {
+        string id PK
+        string name
+        string description
+        int ageMin
+        int ageMax
+        int maxParticipants
+        boolean isActive
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Teacher {
+        string id PK
+        string firstName
+        string lastName
+        string phone
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Session {
+        string id PK
+        string sectionId FK
+        string teacherId FK
+        datetime startsAt
+        datetime endsAt
+        string location
+        int capacity
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Enrollment {
+        string id PK
+        string userId FK
+        string sectionId FK
+        string sessionId FK
+        string status
+        string paymentStatus
+        datetime enrolledAt
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Product {
+        string id PK
+        string name
+        string description
+        int price
+        string imageUrl
+        boolean isActive
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    News {
+        string id PK
+        string title
+        string content
+        string imageUrl
+        string type
+        boolean isActive
+        datetime publishedAt
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    NewsMedia {
+        string id PK
+        string newsId FK
+        string type
+        string url
+        string thumbnailUrl
+        string mimeType
+        int sizeBytes
+        int width
+        int height
+        int durationSec
+        int sortOrder
+        datetime createdAt
+    }
+
+    EventRegistration {
+        string id PK
+        string userId FK
+        string newsId FK
+        string status
+        datetime registeredAt
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Achievement {
+        string id PK
+        string name
+        string description
+        int rewardGrains
+        boolean isActive
+        string sectionId FK
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    UserAchievement {
+        string id PK
+        string userId FK
+        string achievementId FK
+        datetime earnedAt
+        datetime createdAt
+    }
+
+    UserGrain {
+        string id PK
+        string userId FK
+        int amount
+        string reason
+        string type
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Order {
+        string id PK
+        string userId FK
+        int totalAmount
+        string status
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    OrderItem {
+        string id PK
+        string orderId FK
+        string productId FK
+        int quantity
+        int price
+        datetime createdAt
+    }
+
+    Receipt {
+        string id PK
+        string orderId FK
+        string status
+        datetime redeemedAt
+        string redeemedBy FK
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Chat {
+        string id PK
+        string type
+        string sectionId FK
+        string newsId FK
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    ChatParticipant {
+        string id PK
+        string chatId FK
+        string userId FK
+        datetime joinedAt
+        boolean isMuted
+    }
+
+    ChatMessage {
+        string id PK
+        string chatId FK
+        string authorId FK
+        string content
+        datetime createdAt
+        datetime editedAt
+    }
+
+    %% Связи
+    User ||--o{ Enrollment : "записывается на секции"
+    Section ||--o{ Enrollment : "имеет записи"
+    Session ||--o{ Enrollment : "имеет записи"
+    User ||--o{ UserGrain : "имеет зерна"
+    User ||--o{ UserAchievement : "имеет достижения"
+    User ||--o{ Order : "делает заказы"
+    User ||--o{ EventRegistration : "записывается на ивенты"
+    User ||--o{ News : "создает новости (ROOT)"
+    Product ||--o{ OrderItem : "входит в заказы"
+    Achievement ||--o{ UserAchievement : "получается пользователями"
+    Section ||--o{ Achievement : "достижения секции"
+    Section ||--o{ Session : "проводит занятия"
+    Teacher ||--o{ Session : "ведет занятия"
+    Section }o--o{ Teacher : "преподаватели"
+    Order ||--o{ OrderItem : "содержит позиции"
+    Order ||--|| Receipt : "имеет чек"
+    User ||--o{ Receipt : "обрабатывает чеки (ADMIN)"
+    News ||--o{ EventRegistration : "имеет записи"
+    News ||--o{ NewsMedia : "медиа"
+    Chat ||--o{ ChatParticipant : "участники"
+    Chat ||--o{ ChatMessage : "сообщения"
+    Section ||--o{ Chat : "чаты секции"
+    News ||--o{ Chat : "чаты ивента"
+    User ||--o{ ChatParticipant : "состоит в чатах"
+    User ||--o{ ChatMessage : "пишет сообщения"
