@@ -8,10 +8,19 @@ RUN apt-get update -y && \
     rm -rf /var/lib/apt/lists/*
 
 # Копируем package files
-COPY package*.json ./
+COPY package.json ./
+COPY package-lock.json* ./
 
-# Устанавливаем все зависимости (включая dev)
-RUN npm ci --prefer-offline
+# Проверяем наличие файлов и устанавливаем зависимости
+RUN echo "Checking package files..." && \
+    ls -la package*.json && \
+    if [ -f package-lock.json ]; then \
+      echo "package-lock.json found, using npm ci" && \
+      npm ci --prefer-offline; \
+    else \
+      echo "package-lock.json not found, using npm install" && \
+      npm install; \
+    fi
 
 # Копируем Prisma schema
 COPY prisma ./prisma/
@@ -47,12 +56,21 @@ RUN apt-get update -y && \
 ENV NODE_ENV=production
 
 # Копируем package files
-COPY package*.json ./
+COPY package.json ./
+COPY package-lock.json* ./
 
 # Устанавливаем только production зависимости + build deps временно
 RUN apt-get update -y && \
     apt-get install -y --no-install-recommends python3 make g++ && \
-    npm ci --only=production --prefer-offline && \
+    echo "Checking package files in production stage..." && \
+    ls -la package*.json && \
+    (if [ -f package-lock.json ]; then \
+      echo "package-lock.json found, using npm ci" && \
+      npm ci --only=production --prefer-offline; \
+    else \
+      echo "package-lock.json not found, using npm install" && \
+      npm install --only=production; \
+    fi) && \
     apt-get purge -y python3 make g++ && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/* /root/.npm

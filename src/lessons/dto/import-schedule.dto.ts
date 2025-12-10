@@ -1,7 +1,7 @@
 export interface ScheduleRow {
   sectionName: string;
   teacherName?: string;
-  dayOfWeek: number;
+  date: string | Date;
   startsAt: string;
   endsAt: string;
   location?: string;

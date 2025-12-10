@@ -14,16 +14,24 @@ export class SessionsService {
 
     // Первый день месяца
     const startOfMonth = new Date(targetYear, targetMonth - 1, 1);
+    startOfMonth.setHours(0, 0, 0, 0);
     // Первый день следующего месяца
     const endOfMonth = new Date(targetYear, targetMonth, 1);
+    endOfMonth.setHours(23, 59, 59, 999);
 
     const sessions = await this.prisma.lesson.findMany({
+      where: {
+        date: {
+          gte: startOfMonth,
+          lt: endOfMonth,
+        },
+      },
       include: {
         section: true,
         teacher: true,
         _count: { select: { enrollments: true } },
       },
-      orderBy: { startsAt: 'asc' },
+      orderBy: [{ date: 'asc' }, { startsAt: 'asc' }],
     });
 
     const events = await this.prisma.event.findMany({
@@ -64,12 +72,13 @@ export class SessionsService {
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
 
-    const dayOfWeek = date.getDay() || 7; // 0 (воскресенье) => 7
-
-    // Получаем уроки для этого дня недели
+    // Получаем уроки для этой конкретной даты
     const lessons = await this.prisma.lesson.findMany({
       where: {
-        dayOfWeek,
+        date: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
       },
       include: {
         section: true,
@@ -96,7 +105,6 @@ export class SessionsService {
 
     return {
       date: date.toISOString().split('T')[0],
-      dayOfWeek,
       lessons,
       events,
     };
@@ -246,12 +254,26 @@ export class SessionsService {
             continue;
           }
 
+          // Парсим дату
+          let lessonDate: Date;
+          if (typeof date === 'number') {
+            // Excel хранит даты как числа (количество дней с 1900-01-01)
+            lessonDate = new Date((date - 25569) * 86400 * 1000);
+          } else {
+            lessonDate = new Date(date.toString());
+          }
+
+          if (isNaN(lessonDate.getTime())) {
+            errors.push(`Строка ${rowNum}: Неверный формат даты: ${date}`);
+            continue;
+          }
+
           // Создаем занятие
           const session = await this.prisma.lesson.create({
             data: {
               sectionId,
               teacherId,
-              dayOfWeek: new Date(date.toString()).getDay() || 7,
+              date: lessonDate,
               startsAt,
               endsAt,
               location,
