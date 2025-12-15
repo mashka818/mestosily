@@ -11,7 +11,15 @@ export class UploadService {
   }
 
   validateImage(file: Express.Multer.File): boolean {
-    const allowedMimes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp', 'image/svg' ];
+    const allowedMimes = [
+      'image/jpeg',
+      'image/png',
+      'image/jpg',
+      'image/gif',
+      'image/webp',
+      'image/svg+xml',
+      'image/svg',
+    ];
     return allowedMimes.includes(file.mimetype);
   }
 

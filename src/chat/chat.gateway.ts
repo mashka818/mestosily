@@ -86,13 +86,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         return { error: 'Не авторизован' };
       }
 
-      // Проверяем, что пользователь является участником чата
-      const isParticipant = await this.chatService.isParticipant(chatId, authClient.userId);
-
-      if (!isParticipant) {
-        return { error: 'Вы не являетесь участником этого чата' };
-      }
-
       // Присоединяем клиента к комнате чата
       client.join(`chat:${chatId}`);
 
@@ -129,13 +122,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       if (!authClient.userId) {
         return { error: 'Не авторизован' };
-      }
-
-      // Проверяем, что пользователь является участником чата
-      const isParticipant = await this.chatService.isParticipant(chatId, authClient.userId);
-
-      if (!isParticipant) {
-        return { error: 'Вы не являетесь участником этого чата' };
       }
 
       // Создаём сообщение — ВАЖНО: передаём один объект с полями

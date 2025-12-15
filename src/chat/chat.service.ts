@@ -67,19 +67,6 @@ export class ChatService {
     });
   }
 
-  async isParticipant(chatId: string, userId: string): Promise<boolean> {
-    const participant = await this.prisma.chatParticipant.findUnique({
-      where: {
-        chatId_userId: {
-          chatId,
-          userId,
-        },
-      },
-    });
-
-    return !!participant;
-  }
-
   async createMessage(data: { chatId: string; authorId: string; content: string }) {
     const { chatId, authorId, content } = data;
 
