@@ -143,7 +143,7 @@ export class EventsController {
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Зарегистрироваться на мероприятие' })
   registerForEvent(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.eventsService.registerForEvent(user.id, id);
+    return this.eventsService.registerForEvent(user.userId, id);
   }
 
   @Delete(':id/register')
@@ -151,7 +151,7 @@ export class EventsController {
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Отменить регистрацию на мероприятие' })
   cancelRegistration(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.eventsService.cancelRegistration(user.id, id);
+    return this.eventsService.cancelRegistration(user.userId, id);
   }
 
   @Get('my/registrations')
@@ -159,6 +159,6 @@ export class EventsController {
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Получить мои регистрации на мероприятия' })
   getMyRegistrations(@CurrentUser() user: any) {
-    return this.eventsService.getMyRegistrations(user.id);
+    return this.eventsService.getMyRegistrations(user.userId);
   }
 }
